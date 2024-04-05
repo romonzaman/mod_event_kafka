@@ -268,7 +268,13 @@ namespace mod_event_kafka {
 
             if (profile.event_subscriptions > 0 ) {
                 /* Subscribe events */
-                for (int i = 0; i < profile.event_subscriptions; i++) {
+                int i = 0;
+                if (switch_event_bind_removable(modname, SWITCH_EVENT_CUSTOM, "callcenter::info",
+                                                event_handler, static_cast<void*>(&_publisher),&(profile.event_nodes[i])) != SWITCH_STATUS_SUCCESS) {
+                    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Cannot bind to event handler %d!\n",(int)profile.event_ids[i]);
+                    throw std::invalid_argument("Failed to bind event handler for " + std::string(event_filter_name[i]));
+                }
+                for (i = 1; i < profile.event_subscriptions; i++) {
                     if ( switch_strstr(event_filter_name[i], switch_event_custom)) {
                         if (switch_event_bind_removable(modname, SWITCH_EVENT_CUSTOM, event_filter_name[i] + strlen("SWITCH_EVENT_CUSTOM::"),
                                                         event_handler, static_cast<void*>(&_publisher),&(profile.event_nodes[i])) != SWITCH_STATUS_SUCCESS) {
